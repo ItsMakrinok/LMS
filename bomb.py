@@ -28,15 +28,20 @@ def load_image(name):
 
 
 class Bomb(pygame.sprite.Sprite):
-    image_bomb = load_image('bomb.png')
+    image_bomb = load_image('bomb2.png')
     image_boom = load_image('boom.png')
 
-    def __init__(self, *groups):
-        super().__init__(*groups)
+    def __init__(self):
+        super().__init__()
         self.image = Bomb.image_bomb
         self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(width - self.rect.width)
-        self.rect.y = random.randrange(width - self.rect.height)
+        self.random_place()
+        self.add(bombs_group)
+
+    def random_place(self):
+        while pygame.sprite.spritecollideany(self, bombs_group):
+            self.rect.x = random.randrange(width - self.rect.width)
+            self.rect.y = random.randrange(width - self.rect.height)
 
     def update(self, *args):
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
@@ -44,26 +49,23 @@ class Bomb(pygame.sprite.Sprite):
             self.change_image(self.image_boom)
 
     def change_image(self, image):
-        # Находим разность в размерах текущей и новой картинок, чтобы
-        # надпись "Boom" была по центру изображения бомбы, а не в углу
         offset_x = self.image.get_size()[0] - image.get_size()[0]
         offset_y = self.image.get_size()[1] - image.get_size()[1]
 
-        # Передвигаем спрайт на половину разности размеров
         self.rect.y += offset_y / 2
         self.rect.x += offset_x / 2
 
-        # Меняем изображение
         self.image = image
-
 
 
 running = True
 clock = pygame.time.Clock()
 
+FPS = 60
+
 bombs_group = pygame.sprite.Group()
-for i in range(20):
-    Bomb(bombs_group)
+for i in range(10):
+    Bomb()
 
 while running:
     for event in pygame.event.get():
@@ -71,7 +73,8 @@ while running:
             running = False
         bombs_group.update(event)
 
-    delta = clock.tick() / 1000
+    delta = 1 / FPS
+    clock.tick(FPS)
     update(delta)
 
     draw()
